@@ -150,33 +150,44 @@ class SAM2GUI:
             self.frame_idx -= 1
             self.update_image()
 
-    def next_frame(self):
-        if self.frame_idx < len(frame_names) - 1:
-            self.frame_idx += 1
-            
-            if self.frame_idx not in self.video_segments and self.video_segments:
-                try:
-                    last_mask_frame = max(idx for idx in self.video_segments.keys() if idx < self.frame_idx)
-                    
-                    self.status_var.set("Propagating mask...")
+def next_frame(self):
+    if self.frame_idx < len(frame_names) - 1:
+        self.frame_idx += 1
+
+        if self.frame_idx not in self.video_segments and self.video_segments:
+            try:
+                # Find the last frame with a mask before the current frame
+                last_mask_frame = max(idx for idx in self.video_segments.keys() if idx < self.frame_idx)
+
+                self.status_var.set("Propagating mask...")
+                self.master.update_idletasks()
+
+                # Propagate masks from the last frame with a mask to the current frame
+                for prop_frame in range(last_mask_frame + 1, self.frame_idx + 1):
+                    # Run mask propagation on the current frame
+                    for _, out_obj_ids, out_mask_logits in predictor.propagate_in_video(self.inference_state):
+                        if out_obj_ids:
+                            mask = (out_mask_logits[0] > 0.0).cpu().numpy()
+
+                            # Store the propagated mask in the video_segments dictionary
+                            if prop_frame not in self.video_segments:
+                                self.video_segments[prop_frame] = {}
+                            self.video_segments[prop_frame][out_obj_ids[0]] = mask
+                        break
+
+                    # Update progress bar during propagation
+                    progress = (prop_frame - last_mask_frame) / (self.frame_idx - last_mask_frame) * 100
+                    self.progress_var.set(progress)
                     self.master.update_idletasks()
-                    
-                    for prop_frame in range(last_mask_frame + 1, self.frame_idx + 1):
-                        for _, out_obj_ids, out_mask_logits in predictor.propagate_in_video(self.inference_state):
-                            if out_obj_ids:
-                                mask = (out_mask_logits[0] > 0.0).cpu().numpy()
-                                self.video_segments[prop_frame] = {out_obj_ids[0]: mask}
-                            break
-                        progress = (prop_frame - last_mask_frame) / (self.frame_idx - last_mask_frame) * 100
-                        self.progress_var.set(progress)
-                        self.master.update_idletasks()
-                    
-                    self.status_var.set("Mask propagation complete.")
-                except RuntimeError as e:
-                    messagebox.showwarning("Warning", f"Could not propagate mask: {str(e)}")
-            
-            self.update_image()
-        self.progress_var.set(0)
+
+                self.status_var.set("Mask propagation complete.")
+            except RuntimeError as e:
+                messagebox.showwarning("Warning", f"Could not propagate mask: {str(e)}")
+
+        # Ensure the propagated mask is shown on the current frame
+        self.update_image()
+    self.progress_var.set(0)
+
 
 root = tk.Tk()
 gui = SAM2GUI(root)
