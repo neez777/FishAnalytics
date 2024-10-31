@@ -1,0 +1,43 @@
+flowchart TB
+    subgraph Input
+        vid[Input Video] --> fe[Frame Extraction]
+        fe --> frames[Extracted Frames]
+    end
+    
+    subgraph Automated Detection
+        frames --> f2[Florence-2 Detection]
+        f2 --> f2bb[Initial Bounding Boxes]
+        f2bb --> sam2[SAM2 Segmentation]
+        sam2 --> sambb[Refined Bounding Boxes]
+    end
+    
+    subgraph Filtering Pipeline
+        sambb --> size[Size Filter]
+        note1[Removes objects <0.3% of frame size]
+        size --> overlap[Overlap Detection]
+        note2[Removes intersecting boxes]
+        overlap --> crop[Dynamic Cropping]
+        note3[Maximizes background while maintaining single object]
+    end
+    
+    subgraph Manual Verification
+        crop --> cvat[CVAT Review]
+        cvat --> speciesID[Species Classification]
+        speciesID --> add[Additional Annotations]
+        note4[Expert verification and missed fish annotation]
+    end
+    
+    subgraph Model Development
+        add --> train[YOLO Training]
+        train --> inf[YOLO Inference]
+    end
+    
+    subgraph Output
+        inf --> maxn[MaxN Generation]
+        inf --> sac[Species Accumulation Curve]
+    end
+
+    style Automated Detection fill:#e6f3ff
+    style Filtering Pipeline fill:#fff0e6
+    style Manual Verification fill:#f0f9e8
+    style Model Development fill:#f5e6ff
