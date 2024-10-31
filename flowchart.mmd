@@ -12,6 +12,7 @@ flowchart TB
     end
     
     subgraph Filtering Pipeline
+        style Filtering Pipeline fill:#fff0e6
         sambb --> size[Size Filter]
         note1[Removes objects <0.3% of frame size]
         size --> overlap[Overlap Detection]
