@@ -29,7 +29,8 @@ flowchart TB
     
     subgraph Model Development
         add --> train[YOLO Training]
-        train --> inf[YOLO Inference]
+        train --> vid
+        vid --> inf[YOLO Inference]
     end
     
     subgraph Output
