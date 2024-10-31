@@ -1,45 +1,44 @@
 flowchart TB
-    subgraph Input
-        vid[Input Video] --> fe[Frame Extraction]
-        fe --> frames[Extracted Frames]
+    subgraph Input["<font size=+1><b>Input</b></font>"]
+        vid["Input Video"] --> fe["Frame Extraction"]
+        fe --> frames["Extracted Frames"]
     end
     
-    subgraph Automated Detection
-        frames --> f2[Florence-2 Detection]
-        f2 --> f2bb[Initial Bounding Boxes]
-        f2bb --> sam2[SAM2 Segmentation]
-        sam2 --> sambb[Refined Bounding Boxes]
+    subgraph Auto["<font size=+1><b>Automated Detection</b></font>"]
+        frames --> f2["Florence-2 Detection"]
+        f2 --> f2bb["Initial Bounding Boxes"]
+        f2bb --> sam2["SAM2 Segmentation"]
+        sam2 --> sambb["Refined Bounding Boxes"]
     end
     
-    subgraph Filtering Pipeline
-        style Filtering Pipeline fill:#fff0e6
-        sambb --> size[Size Filter]
-        note1[Removes objects <0.3% of frame size]
-        size --> overlap[Overlap Detection]
-        note2[Removes intersecting boxes]
-        overlap --> crop[Dynamic Cropping]
-        note3[Maximizes background while maintaining single object]
-    end
-    
-    subgraph Manual Verification
-        crop --> cvat[CVAT Review]
-        cvat --> speciesID[Species Classification]
-        speciesID --> add[Additional Annotations]
-        note4[Expert verification and missed fish annotation]
-    end
-    
-    subgraph Model Development
-        add --> train[YOLO Training]
-        train --> vidinf[Input Video]
-        vidinf --> inf[YOLO Inference]
-    end
-    
-    subgraph Output
-        inf --> maxn[MaxN Generation]
-        inf --> sac[Species Accumulation Curve]
+    subgraph Filter["<font size=+1><b>Filtering Pipeline</b></font>"]
+        sambb --> size["Size Filter <br> (Removes objects <0.3% of frame size)"]
+        size --> overlap["Overlap Detection <br> (Removes intersecting boxes)"]
+        overlap --> crop["Dynamic Cropping <br> (Maximizes background while maintaining single object)"]
     end
 
-    style Automated Detection fill:#e6f3ff
-    style Filtering Pipeline fill:#fff0e6
-    style Manual Verification fill:#f0f9e8
-    style Model Development fill:#f5e6ff
+    yolo["<font size=+1><b>YOLO Pre-annotation <br> Inference</b></font><br>Future additional step"] -.-> cvat
+    
+    subgraph Manual["<font size=+1><b>Manual Verification</b></font>"]
+        crop --> cvat["CVAT Review"]
+        cvat --> speciesID["Species Classification"]
+        speciesID --> add["Additional Annotations"]
+    end
+    
+    subgraph Model["<font size=+1><b>Model Development</b></font>"]
+        add --> train["YOLO Training"]
+        train --> inf["YOLO Inference"]
+    end
+    
+    subgraph Output["<font size=+1><b>Output</b></font>"]
+        inf --> maxn["MaxN Generation"]
+        inf --> sac["Species Accumulation Curve"]
+    end
+
+    style Input fill:#ffffff
+    style Auto fill:#e6f3ff
+    style Filter fill:#fff0e6
+    style Manual fill:#f0f9e8
+    style Model fill:#f5e6ff
+    style Output fill:#ffffff
+    style yolo fill:#e6f3ff
