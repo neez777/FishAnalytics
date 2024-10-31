@@ -1,38 +1,38 @@
 flowchart TB
     subgraph Input["<font size=+1><b>Input</b></font>"]
-        vid["Input Video"] --> fe["Frame Extraction"]
-        fe --> frames["Extracted Frames"]
+        vid["<b>Input Video</b>"] --> fe["<b>Frame Extraction</b>"]
+        fe --> frames["<b>Extracted Frames</b>"]
     end
     
     subgraph Auto["<font size=+1><b>Automated Detection</b></font>"]
-        frames --> f2["Florence-2 Detection"]
-        f2 --> f2bb["Initial Bounding Boxes"]
-        f2bb --> sam2["SAM2 Segmentation"]
-        sam2 --> sambb["Refined Bounding Boxes"]
+        frames --> f2["<b>Florence-2 Detection</b>"]
+        f2 --> f2bb["<b>Initial Bounding Boxes</b>"]
+        f2bb --> sam2["<b>SAM2 Segmentation</b>"]
+        sam2 --> sambb["<b>Refined Bounding Boxes</b>"]
     end
     
     subgraph Filter["<font size=+1><b>Filtering Pipeline</b></font>"]
-        sambb --> size["Size Filter <br> (Removes objects <0.3% of frame size)"]
-        size --> overlap["Overlap Detection <br> (Removes intersecting boxes)"]
-        overlap --> crop["Dynamic Cropping <br> (Maximizes background while maintaining single object)"]
+        sambb --> size["<b>Size Filter</b> <br> <i>Removes objects <0.3% of frame size</i>"]
+        size --> overlap["<b>Overlap Detection</b> <br> <i>Removes intersecting boxes</i>"]
+        overlap --> crop["<b>Dynamic Cropping</b> <br> <i>Maximizes background while maintaining single object</i>"]
     end
 
     yolo["<font size=+1><b>YOLO Pre-annotation <br> Inference</b></font><br>Future additional step"] -.-> cvat
     
     subgraph Manual["<font size=+1><b>Manual Verification</b></font>"]
-        crop --> cvat["CVAT Review"]
-        cvat --> speciesID["Species Classification"]
-        speciesID --> add["Additional Annotations"]
+        crop --> cvat["<b>CVAT Review</b>"]
+        cvat --> speciesID["<b>Species Classification</b>"]
+        speciesID --> add["<b>Additional Annotations</b>"]
     end
     
     subgraph Model["<font size=+1><b>Model Development</b></font>"]
-        add --> train["YOLO Training"]
-        train --> inf["YOLO Inference"]
+        add --> train["<b>YOLO Training</b>"]
+        train --> inf["<b>YOLO Inference</b>"]
     end
     
     subgraph Output["<font size=+1><b>Output</b></font>"]
-        inf --> maxn["MaxN Generation"]
-        inf --> sac["Species Accumulation Curve"]
+        inf --> maxn["<b>MaxN Generation</b>"]
+        inf --> sac["<b>Species Accumulation Curve</b>"]
     end
 
     style Input fill:#ffffff
